@@ -1,0 +1,12 @@
+.col-lg-custom-sidebar{
+  flex-basis: calc((100% / 12) * 0.5);
+  max-width: calc((100% / 12) * 0.5);
+}
+.col-lg-custom-infor{
+  flex-basis: calc((100% / 12) * 2.1);
+  max-width: calc((100% / 12) * 2.1);
+}
+.col-lg-custom-conversation{
+  flex-basis: calc((100% / 12) * 2.4);
+  max-width: calc((100% / 12) * 2.4);
+}
