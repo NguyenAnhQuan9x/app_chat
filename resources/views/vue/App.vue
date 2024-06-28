@@ -1,7 +1,7 @@
 <script setup>
 import { RouterLink, RouterView } from 'vue-router'
 import HelloWorld from './components/HelloWorld.vue'
-import Login from "./views/auth/Login.vue";
+import Login from "./auth/Login.vue";
 import SideBarLeft from "./components/SideBarLeft.vue";
 import { useRouter } from 'vue-router';
 import { onMounted } from 'vue';

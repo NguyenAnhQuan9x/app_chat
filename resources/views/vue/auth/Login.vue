@@ -1,5 +1,5 @@
 <script setup>
-import {httpService} from "../../services/app-service";
+import {httpService} from "../services/app-service";
 import {useRouter} from "vue-router"
 import {onMounted,reactive,ref} from "vue"
 import axios from "axios";

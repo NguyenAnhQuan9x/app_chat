@@ -1,8 +1,8 @@
 <script setup>
 import Swal from "sweetalert2";
 import moment from "moment";
-import SideBarLeft from "../components/SideBarLeft.vue";
-import { httpService } from "../services/app-service";
+import SideBarLeft from "./components/SideBarLeft.vue";
+import { httpService } from "./services/app-service";
 import { useRouter } from "vue-router";
 import {onMounted, reactive, ref} from "vue";
 import data from "bootstrap/js/src/dom/data";

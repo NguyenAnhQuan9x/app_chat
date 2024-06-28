@@ -1,7 +1,7 @@
 <script setup>
-import SideBarLeft from "../components/SideBarLeft.vue";
+import SideBarLeft from "./components/SideBarLeft.vue";
 import { onMounted, reactive, ref } from "vue";
-import { httpService } from "../services/app-service";
+import { httpService } from "./services/app-service";
 import { useRouter } from "vue-router";
 import Swal from "sweetalert2";
 const router = useRouter()
