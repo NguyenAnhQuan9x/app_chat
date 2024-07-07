@@ -1,5 +1,5 @@
 <template>
-    <div class="col-lg-custom-sidebar " id="sidebarleft">
+    <div id="sidebarleft">
         <router-link :to="{name:'home'}" class="d-none d-xl-block bg-light rounded" href="#" id="logo">
             <svg height="30" width="30" viewBox="0 0 512 511">
                 <g>

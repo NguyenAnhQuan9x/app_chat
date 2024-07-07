@@ -332,10 +332,10 @@ httpService.removeContact(contact_id)
                                 <!-- List Group Item Start -->
                                 <li class="list-group-item" v-for="user_search in user_search.value">
                                     <div class="media position-relative">
-                                        <div class="avatar avatar-online mr-2">
+                                        <!-- <div class="avatar avatar-online mr-2">
                                             <img src="./../../public/media/tu-anh-3241-1681750589.jpg" alt=""
                                                 class="rounded-circle">
-                                        </div>
+                                        </div> -->
 
                                         <div class="media-body">
                                             <h6 class="text-truncate">

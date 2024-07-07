@@ -4,24 +4,25 @@ import HelloWorld from './components/HelloWorld.vue'
 import Login from "./auth/Login.vue";
 import SideBarLeft from "./components/SideBarLeft.vue";
 import { useRouter } from 'vue-router';
-import { onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
 const router = useRouter()
 const today = new Date()
+const token = ref();
 onMounted(()=>{
     if(localStorage.getItem('token')){
         const tokenExpiry = JSON.parse(localStorage.getItem('token'));
-    // if(today.getTime() > tokenExpiry.expiry){
-    //     localStorage.removeItem('token')
-    // }
+        token.value = tokenExpiry;
+    if(today.getTime() > tokenExpiry.expiry){
+        localStorage.removeItem('token')
+    }
     }else{
         router.push({name:'auth.login'})
     }
 })
-console.log('quan')
 </script>
 
 <template>
-    <div id="home" class="row">
+    <div class="row" :class ="{'homepage':token,'login-page':!token}">
         <RouterView />
     </div>
 </template>

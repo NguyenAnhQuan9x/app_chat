@@ -17,11 +17,7 @@ use Illuminate\Support\Facades\Broadcast;
 // Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
 //     return (int) $user->id === (int) $id;
 // });
+
 Broadcast::channel('conversation-{conversation_id}',function($user,$conversation_id){
-    if(Auth::check()){
-        return [
-            'id'=>$user->id,
-            'name'=>$user->name
-        ];
-    }
+    return Auth::check();
 });

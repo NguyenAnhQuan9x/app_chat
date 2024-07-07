@@ -39,7 +39,7 @@ class ConversationController extends Controller
     //get detail conversation
     public function show($conversation)
     {
-        $conversation = Conversation::where('id',$conversation)->with('users')->withCount('users')->first();
+        $conversation = Conversation::where('id',$conversation)->with('users')->withCount('users')->first(); 
         return response()->json([
             'status'=>true,
             'data'=>$conversation
@@ -109,6 +109,7 @@ class ConversationController extends Controller
             'conversation_id'=>$conversation,
             'user_id'=>$user_id
         ]);
+        $message = Message::where('id',$message->id)->with('replyMessage','users')->first();
         broadcast(new NewChatMessage($message))->toOthers();
         if($message){
             return response()->json([
@@ -128,6 +129,8 @@ class ConversationController extends Controller
             'user_id'=>$user_id,
             'parent_id'=>$message
         ]);
+        $message = Message::where('id',$message->id)->with('replyMessage','users')->first();
+        broadcast(new NewChatMessage($message))->toOthers();
         if($message){
             return response()->json([
                 'status'=>true,

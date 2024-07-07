@@ -20,6 +20,7 @@ html {
   height: 100%;
 }
 .form-login{
+  background: #fff4ed;
   h1{
     font-size: 28px;
     font-weight: 600;
@@ -57,16 +58,24 @@ html {
       }
     }
   }
+  .login-page{
+    height: 100%;
+    background: #fff4ed;
+  }
 }
 
 body {
   margin: 0;
 }
 
-#home {
+.homepage {
   max-height: 98vh;
 }
-
+.conversation-info{
+  @media screen and (max-width:1170px) {
+    display: none;
+  }
+}
 #sidebarleft {
   height: 98vh;
   background-color: var(--main-color);
@@ -74,6 +83,7 @@ body {
   padding-left: 0;
   padding-right: 0;
   flex-direction: column;
+  width: 70px;
 }
 
 #sidebarleft .nav {

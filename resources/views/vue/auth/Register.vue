@@ -1,5 +1,5 @@
 <script setup>
-import {httpService} from "../../services/app-service";
+import {httpService} from "../services/app-service";
 import {useRouter} from "vue-router";
 import {ref,reactive} from "vue";
 const router = useRouter()

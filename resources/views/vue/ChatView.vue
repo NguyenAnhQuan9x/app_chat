@@ -2,7 +2,6 @@
     import SideBarLeft from "./components/SideBarLeft.vue";
     import Swal from "sweetalert2";
     import moment from 'moment';
-    import Echo from "laravel-echo";
     import './assets/scss/chat.css'
     import { ref, onMounted, reactive } from "vue"
     import { httpService } from "./services/app-service";
@@ -15,6 +14,7 @@
     const messageRecover = ref([])
     const messageDelete = ref([])
     const messages = reactive({})
+    const message = reactive({})
     const messageReply = reactive({})
     const messageForm = reactive({
         'user': '',
@@ -24,6 +24,7 @@
     const user = reactive({
     })
     const user_search = reactive({})
+    const newMessages = ref([])
     const conversationForm = reactive({
         'user_id': ''
     })
@@ -34,11 +35,12 @@
         'user_id': ''
     })
     const notiCreateGroup = ref(null)
+
     onMounted(() => {
         httpService.getConversation()
             .then(res => {
                 conversations.value = res.data.data
-                console.log(res.data)
+                //console.log(res.data)
             }).catch(err => {
 
             })
@@ -51,80 +53,78 @@
             }).catch(err => {
 
             })
-        // window.echo.channel('chat-'+chat_id)
-        //     .listen('SendMessage',(event)=>{
-        //         console.log(event)
-        //     })6++++
-        
         //Ở lại cuộc trò chuyện sau khi tải lại trang
         if (router.currentRoute.value.params.conversation_id) {
             chat_id.value = router.currentRoute.value.params.conversation_id
             httpService.getConversationDetail(chat_id.value)
                 .then(res => {
                     conversation.value = res.data.data
+                    //console.log(conversation.value)
                     activePage.value = chat_id.value
                 }).catch(err => {
 
                 })
-            httpService.getMessage(chat_id.value)
-                .then(res => {
-                    messages.value = res.data.data
-                    console.log(res.data)
-                }).catch(err => {
-
-                })
-            //Xác nhận tin nhắn đã đọc
-            httpService.readMessage(chat_id.value)
-                .then(res => {
-                    console.log(res.data.message)
-                }).catch(err => {
-
-                })
+            getMessage()
+            readMessage()
         }
         httpService.channelMessage(chat_id.value)
         .then(res=>{
             httpService.getMessage(chat_id.value)
                 .then(res => {
                     messages.value = res.data.data
-                    console.log(res.data)
+                    //console.log(res.data)
                 }).catch(err => {
 
                 })
         })
     })
 
-    // Echo.private('chat-channel')
-    //     .listen('SendMessage',(e)=>{
-    //         message.content = e.message.content
-    //         message.user = user.value.id
-    //     })
-
+    
     //Lấy thông tin chi tiết cuộc trò chuyêện
     function chatConversation(conversation_id) {
-        console.log('---m5---');
         router.push({ name: 'conversation', params: { conversation_id: conversation_id } })
         chat_id.value = conversation_id
         httpService.getConversationDetail(conversation_id)
             .then(res => {
                 conversation.value = res.data.data
-                console.log(conversation.value)
+                //console.log(conversation.value)
+                newMessage()
                 activePage.value = conversation_id
             }).catch(err => {
 
             })
-        httpService.getMessage(conversation_id)
-            .then(res => {
-                messages.value = res.data.data
-            }).catch(err => {
+        getMessage()
+        readMessage()
+    }
+    function newMessage(){
+        window.Echo.private('conversation-'+chat_id.value)
+                    .listen('NewChatMessage',(e)=>{
+                    console.log('listen event')
+                    newMessages.value.push(e.chatMessage) ;
+                    console.log(e);
+                    console.log(newMessages.value);
+                    })
+    }
+    //Lấy tin nhắn
+    function getMessage()
+    {
+        httpService.getMessage(chat_id.value)
+                .then(res => {
+                    messages.value = res.data.data
+                    //console.log(res.data)
+                }).catch(err => {
 
-            })
-        //Xác nhận tin nhắn đã đọc
-        httpService.readMessage(conversation_id)
-            .then(res => {
-                console.log(res.data.message)
-            }).catch(err => {
+                })
+    }
+    //Xác nhận tin nhắn đã đọc
+    function readMessage()
+    {
+        httpService.readMessage(chat_id.value)
+                .then(res => {
+                    //console.log(res.data.message)
+                }).catch(err => {
 
-            })
+                })
     }
     //Gưi tin nhắn
     function sendMessage() {
@@ -133,16 +133,18 @@
         if (messageReply.value) {
             httpService.sendMessageReplay(messageForm, chat_id.value, messageReply.value.id)
                 .then(res => {
-                    console.log('messsage sent')
-                    window.location.reload()
+                    //console.log('messsage sent')
+                    //window.location.reload()
                 }).catch(err => {
 
                 })
+                
         } else {
             httpService.sendMessage(messageForm, chat_id.value)
                 .then(res => {
-                    console.log('messsage sent')
-                    window.location.reload()
+                    message.value = res.data.data
+                    //console.log('messsage sent')
+                    //window.location.reload()
                 }).catch(err => {
 
                 })
@@ -154,7 +156,8 @@
         httpService.getMessageDetail(message_id)
             .then(res => {
                 messageReply.value = res.data.data
-                console.log(messageReply.value)
+                newMessage()
+                //console.log(messageReply.value)
             }).catch(err => {
 
             })
@@ -176,7 +179,7 @@
             .then(res => {
                 if (res.data.status) {
                     messageRecover.value.push(parseInt(res.data.data))
-                    console.log(messageRecover.value)
+                    //console.log(messageRecover.value)
                 }
             }).catch(err => {
 
@@ -248,7 +251,7 @@
         conversationForm.user_id = user_id
         httpService.addConversation(conversationForm, user_id)
             .then(res => {
-                console.log(res.data)
+                //console.log(res.data)
                 router.push({ name: 'conversation', params: { conversation_id: res.data.data.id } })
                 Swal.fire('Bạn đã tạo cuộc trò chuyện thành công',
                     'Bắt đầu chat ngay bây giờ!',
@@ -263,7 +266,7 @@
     function userSearch() {
         httpService.searchUser(name.value)
             .then(res => {
-                console.log(res.data.data)
+                //console.log(res.data.data)
                 user_search.value = res.data.data
             }).catch(err => {
 
@@ -272,7 +275,7 @@
     //Tạo group chat
     function createGroup() {
         groupForm.user_id = addUserGroup.value
-        console.log(groupForm)
+        //console.log(groupForm)
         httpService.createGroup(groupForm)
             .then(res => {
                 if (res => data.status) {
@@ -284,7 +287,7 @@
     }
     function inviteUserGroup(conversation_id) {
         groupForm.user_id = addUserGroup.value
-        console.log(conversation_id)
+        //console.log(conversation_id)
         httpService.inviteUserGroup(groupForm,conversation_id)
             .then(res => {
                 Swal.fire('Bạn đã thêm thành viên thành công',
@@ -332,7 +335,7 @@
 <template>
     <SideBarLeft></SideBarLeft>
 
-    <div class="col-lg-custom-conversation" id="conversation">
+    <div class="col-3" id="conversation">
         <div class="sticky-top bg-light p-2">
             <div class="position-relative">
                 <h3>Chat</h3>
@@ -396,10 +399,10 @@
                         </div>
                         <i class="fa-solid fa-circle" id="status-online"></i>
                         <div class="card-body col-md-9" v-if="conversation.type == 'private'">
-                            <h6 class="fw-semibold" v-for="value in conversation.users"><span
+                            <h6 class="fw-semibold" v-for="value in conversation.users" v-if="user.value"><span
                                     v-if="value.id != user.value.id">{{ value.name }}</span></h6>
                             <p :class="{'opacity-50':conversation.messages_count <= 0}"
-                                v-if="conversation.messages.length > 0"><span
+                                v-if="conversation.messages.length > 0 && user.value"><span
                                     v-if="conversation.messages[0].user_id==user.value.id">Bạn:
                                 </span>{{conversation.messages[0].content.slice(0,35)+'...'}}<span
                                     v-if="conversation.messages_count > 0"
@@ -545,7 +548,7 @@
             </div>
         </div>
     </div>
-    <div class="chat col-7 p-0" v-if="chat_id != 0">
+    <div class="chat col p-0" v-if="chat_id != 0">
         <div class="chat-body">
             <div class="chat-header sticky-top border border-1 bg-light">
                 <div class="row m-2">
@@ -553,14 +556,16 @@
                         <img src="https://www.w3schools.com/w3images/avatar2.png" class="img-fluid rounded-circle"
                             alt="...">
                     </div>
-                    <div class="card-body col-md-10" v-if="conversation.value.type == 'private'">
-                        <h6 class="fw-semibold" v-for="value in conversation.value.users"><span
+                    <div class="card-body col-md-10" v-if="conversation.value">
+                        <div v-if="conversation.value.type == 'private'">
+                            <h6 class="fw-semibold" v-for="value in conversation.value.users" v-if="user.value"><span
                                 v-if="value.id != user.value.id">{{ value.name }}</span></h6>
-                        <p class="opacity-50">Online</p>
-                    </div>
-                    <div class="card-body col-md-10" v-else>
-                        <h6 class="fw-semibold"><span>{{ conversation.value.title }}</span></h6>
-                        <p>{{conversation.value.users_count}} thành viên </p>
+                            <p class="opacity-50">Online</p>
+                        </div>
+                        <div v-else>
+                            <h6 class="fw-semibold"><span>{{ conversation.value.title }}</span></h6>
+                            <p>{{conversation.value.users_count}} thành viên </p>
+                        </div>
                     </div>
                 </div>
                 <ul class="nav flex-nowrap position-absolute top-0 end-0 m-3">
@@ -570,8 +575,8 @@
                             <i class="fa fa-magnifying-glass"></i>
                         </p>
                     </li>
-                    <li class="nav-item list-inline-item mt-2" v-if="conversation.value.type == 'group'">
-                        <button class="dropdown-item" type="button" role="button" data-bs-toggle="modal"
+                    <li class="nav-item list-inline-item mt-2" v-if="conversation.value">
+                        <button v-if="conversation.value.type == 'group'" class="dropdown-item" type="button" role="button" data-bs-toggle="modal"
                             data-bs-target="#addUserGroup"><i class="fa-solid fa-users"><span
                                     class="add-user-group">+</span></i></button>
                     </li>
@@ -694,10 +699,10 @@
                                 </div>
                             </div>
                         </div>
-            <div class="chat-start">
+            <div class="chat-start" v-if="conversation.value">
                 <div v-if="conversation.value.type == 'private'" class="" v-for="value in conversation.value.users">
-                    <div v-if="value.id != user.value.id">
-                        <div>
+                    <div v-if="user.value">
+                        <div v-if="value.id != user.value.id">
                             <img class="avatar-img rounded-circle"
                                 src="https://i.pinimg.com/originals/51/a3/7c/51a37c78042b19cee727c4e210d03108.jpg"
                                 alt="">
@@ -724,7 +729,7 @@
                 <div class="container">
 
                     <!-- Message Day Start -->
-                    <div class="message-day">
+                    <div class="message-day" v-if="user.value">
 
                         <div class="message-divider sticky-top pb-2" data-label="Yesterday">&nbsp;</div>
 
@@ -822,6 +827,79 @@
                                 </div>
                             </div>
                         </div>
+                        <div v-if="newMessages.length">
+                            <div :class="{'message-self':user.value.id==newMessage.user_id,'message':user.value.id!=newMessage.user_id,'message-deleted':newMessage.status==0&&newMessage.user_id==user.value.id}"
+                            v-for="newMessage in newMessages">
+                            <div
+                                v-if="newMessage.status==0&&newMessage.user_id==user.value.id ||messageDelete.includes(newMessage.id)">
+                            </div>
+                            <div v-else>
+        
+                                <div class="message-wrapper">
+                                    <div class="message-content recover-message"
+                                        v-if="newMessage.is_published==0||messageRecover.includes(newMessage.id)">
+                                        Tin nhắn được được thu hồi
+                                    </div>
+                                    <div class="message-content" v-else>
+                                        <div class="msg-rl-content" v-if="newMessage.reply_message">
+                                            <div class="msg-rl-user">
+                                                {{newMessage.reply_message.users.name}}
+                                            </div>
+                                            <div class="content">
+                                                {{newMessage.reply_message.content}}
+                                            </div>
+                                        </div>
+                                        <div class="msg-user"
+                                            v-if="newMessage.user_id != user.value.id && conversation.value.type=='group'">
+                                            <span>{{ newMessage.users.name }} </span>
+                                        </div>
+                                        <span>{{
+                                            newMessage.content
+                                            }}</span>
+                                    </div>
+                                </div>
+                                <div v-if="user.value.id==newMessage.user_id"
+                                    style="font-size: 12px">
+                                    <span v-if="newMessage.is_read == 1">Đã xem</span>
+                                    <span v-else>Đã gửi</span>
+                                </div>
+                                <div class="message-options">
+                                    <div class="avatar avatar-sm "
+                                        v-if="user.value.id==newMessage.user_id&&newMessage.is_read == 1">
+                                        <img alt="" class="rounded-circle"
+                                            src="https://i.pinimg.com/originals/51/a3/7c/51a37c78042b19cee727c4e210d03108.jpg"
+                                            width="36px" height="36px">
+                                    </div>
+
+                                    <span class="message-date">{{moment(newMessage.created_at).format('hh:mm A')}}</span>
+
+                                    <div class="dropdown">
+                                        <a class="nav-link" href="#" data-bs-toggle="dropdown" data-bs-display="static"
+                                            aria-expanded="false">
+                                            <i class="fa-solid fa-ellipsis"></i>
+                                        </a>
+                                        <div class="dropdown-menu" aria-labelledby="messageOptions">
+                                            <a class="dropdown-item d-flex align-items-center" href="#">
+                                                <span>Copy tin nhắn</span>
+                                            </a>
+                                            <a class="dropdown-item d-flex align-items-center" href="#"
+                                                @click="replyMessage(newMessage.id)">
+                                                <span>Trả lời</span>
+                                            </a>
+                                            <a class="dropdown-item d-flex align-items-center text-danger" href="#"
+                                                @click="recoverMyMessage(newMessage.id)">
+                                                <span>Thu hồi</span>
+                                            </a>
+                                            <a class="dropdown-item d-flex align-items-center text-danger" href="#"
+                                                @click="removeMyMessage(newMessage.id)">
+                                                <span>Xoá chỉ ở phía tôi</span>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        </div>
                     </div>
 
                 </div>
@@ -874,7 +952,7 @@
             </div>
         </div>
     </div>
-    <div class="chats col-7" v-else>
+    <div class="chats col" v-else>
         <div class="d-flex flex-column justify-content-center text-center h-100 w-100">
             <div class="container">
                 <div class="avatar-default avatar-lg mb-2">
@@ -962,7 +1040,7 @@
         </div>
 
     </div>
-    <div class="col-lg-custom-infor border border-1 appbar m-0 p-0">
+    <div class="col-2 conversation-info border border-1 appbar m-0 p-0">
         <div class="appbar-header border border-1 m-0" v-if="chat_id  == 0">
             <svg width="35px" class="hw-20" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 viewBox="0 0 24 24" stroke="currentColor">
@@ -982,9 +1060,9 @@
                 </svg>
                 <h6 class="mb-0 mt-0">App</h6>
             </div>
-            <div class="infor-avatar mt-2" v-if="conversation.value.type == 'private'">
-                <div>
-                    <div class="" v-for="value in conversation.value.users">
+            <div class="infor-avatar mt-2" v-if="conversation.value">
+                <div v-if="conversation.value.type == 'private'">
+                    <div class="" v-for="value in conversation.value.users" v-if="user.value">
                         <div v-if="value.id != user.value.id">
                             <div>
                                 <img class="avatar-img rounded-circle"
@@ -1005,9 +1083,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="infor-avatar mt-2" v-else>
-                <div>
+                <div v v-else>
                     <div class="">
                         <div>
                             <div>
@@ -1048,7 +1124,7 @@
                                                     <i class="fa-solid fa-ellipsis-vertical"></i>
                                                 </a>
                                                 <div class="dropdown">
-                                                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                                                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1" v-if="user.value">
                                                         <li><a class="dropdown-item" href="#"
                                                                 @click="Chat(user_group.id)">Chat</a></li>
                                                         <li

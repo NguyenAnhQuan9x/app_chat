@@ -21,7 +21,7 @@ function loginClick(){
         .then(res=>{
             token.value = {
                 'value':res.data.token,
-                'expiry': today.getTime()+1000000
+                'expiry': today.getTime()+7200000
             }
             localStorage.setItem('token',JSON.stringify(token.value))
             //console.log(res.data)
