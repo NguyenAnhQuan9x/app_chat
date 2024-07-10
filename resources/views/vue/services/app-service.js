@@ -54,6 +54,13 @@ class AppService {
             }
         })
     }
+    searchConversation(data){
+        return appService.get('api/conversations/search?keyword='+data,{
+            headers:{
+                Authorization:'Bearer '+ JSON.parse(localStorage.getItem('token')).value
+            }
+        })
+    }
     getConversationDetail(conversaton_id){
         return appService.get('api/conversations/'+conversaton_id,{
             headers:{

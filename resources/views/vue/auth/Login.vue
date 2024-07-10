@@ -45,7 +45,7 @@ function loginClick(){
     <div class="container">
         <div class="row">
             <div class="form-login">
-                <h1 class="text-center m-5"><img src="logo_qni_chat.png" alt="qunichat" width="25px" height="25px">Quichat</h1>
+                <h1 class="text-center m-5"><img src="qni_chat_logo.png" alt="qunichat" width="25px" height="25px">Quichat</h1>
                 <div class="title text-center">
                     <p class="form-login-title">Sign in</p>
                     <p class="text-secondary">Sign in to continue to Qnichat</p>

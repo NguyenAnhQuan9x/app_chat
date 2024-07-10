@@ -1,5 +1,6 @@
 import 'bootstrap';
 import './bootstrap.js';
+import '../views/vue/assets/js/app.js'
 import 'bootstrap/dist/css/bootstrap.css'
 import '../views/vue/assets/scss/app.css'
 import '../views/vue/assets/scss/bootstrap_custom.css'

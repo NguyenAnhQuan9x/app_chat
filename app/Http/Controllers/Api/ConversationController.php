@@ -19,7 +19,7 @@ class ConversationController extends Controller
 {
     //
     //Get list conversation
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
         $conversations = $user->myConversation()->with('users')->withCount(['messages'=>function(Builder $query){
@@ -28,6 +28,11 @@ class ConversationController extends Controller
         }])->with('messages',function($message){
             $message->latest();
         });
+        $keyword = '';
+        if($request->get('keyword')){
+            $keyword = $request->get('keyword');
+            $conversations = $conversations->where('title','LIKE',"%{$keyword}%");
+        }
         $conversations = $conversations->get();
         if($conversations){
             return response()->json([

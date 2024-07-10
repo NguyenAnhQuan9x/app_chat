@@ -8,8 +8,8 @@
   box-sizing: border-box;
 }
 :root{
-  --main-color:#2585c1;
-  --extra-color:#f8931f;
+  --main-color:#00aebf;
+  --extra-color:#2985be;
   --border-color:#f2f2f2;
   --white-color:#fff;
   --text-secondary:#999;
@@ -20,7 +20,7 @@ html {
   height: 100%;
 }
 .form-login{
-  background: #fff4ed;
+  //background: #fff4ed;
   h1{
     font-size: 28px;
     font-weight: 600;
@@ -39,7 +39,7 @@ html {
 #app {
   height: 100%;
   overflow-x: hidden;
-  background: var(--white-color);
+  background: #00acba14;
 
   .form {
     width: 30%;
@@ -54,13 +54,13 @@ html {
       background: var(--main-color);
       color: #fff;
       &:hover{
-        background-color: #eb8751;
+        background-color: var(--extra-color);
       }
     }
   }
   .login-page{
     height: 100%;
-    background: #fff4ed;
+    //background: #fff4ed;
   }
 }
 
@@ -111,6 +111,11 @@ body {
   max-height: 100vh;
   overflow-y: auto;
   padding: 0;
+  .list-group{
+    .active{
+      background-color: var(--extra-color);
+    }
+  }
 }
 
 #conversation::-webkit-scrollbar {

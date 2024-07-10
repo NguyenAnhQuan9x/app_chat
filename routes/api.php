@@ -30,6 +30,7 @@ Route::group(['middleware'=>'auth:sanctum'],function(){
     //api conversation
     Route::group(['prefix'=>'conversations'],function(){
         Route::get('/',[\App\Http\Controllers\Api\ConversationController::class,'index']);
+        Route::get('/search',[\App\Http\Controllers\Api\ConversationController::class,'index']);
         Route::get('/{conversation}',[\App\Http\Controllers\Api\ConversationController::class,'show']);
         Route::post('/group/store',[\App\Http\Controllers\Api\ConversationController::class,'storeGroup']);
         Route::post('/group/member/add/{conversation}',[\App\Http\Controllers\Api\ConversationController::class,'addMemberGroup']);

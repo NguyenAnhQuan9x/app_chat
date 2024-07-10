@@ -29,6 +29,7 @@
         'user_id': ''
     })
     const name = ref(null)
+    const conversation_name = ref(null)
     const addUserGroup = ref([])
     const groupForm = reactive({
         'title': '',
@@ -216,6 +217,7 @@
         })
 
     }
+
     //Xóa nội dung cuộc trò chuyện
     function removeMessageConversation(conversation_id) {
         Swal.fire({
@@ -261,6 +263,16 @@
             }).catch(err => {
 
             })
+    }
+    //Tìm kiếm cuộc trò chuyện
+    function searchConversation()
+    {
+        httpService.searchConversation(conversation_name.value)
+        .then(res=>{
+            conversations.value = res.data.data
+        }).catch(err=>{
+
+        })
     }
     //Tìm kiếm user theo tên
     function userSearch() {
@@ -381,13 +393,13 @@
                         <div class="form-group has-search">
                             <a href="#" class="form-control-feedback"></a>
                             <input type="text" name="keyword" class="form-control w-80 align-content-center"
-                                placeholder="Search">
+                                placeholder="Search" v-model="conversation_name" @input="event=>searchConversation()">
                         </div>
                     </form>
                 </div>
             </div>
         </div>
-        <div class="mt-4 m-2">
+        <div class="mt-4 m-2 conversation-list">
             <ul class="list-group contact-list">
                 <li class="contacts-item friends list-group-item mt-3" :class="{active:activePage==conversation.id}"
                     v-for="conversation in conversations.value" @click="chatConversation(conversation.id)"
@@ -421,7 +433,15 @@
                 </li>
             </ul>
         </div>
+        <div class="search-result">
+            <h3>Kết quả tìm kiếm</h3>
+            <div class="search">
+                <p>Tin nhắn</p>
+            </div>
+            <div class="search-result-list">
 
+            </div>
+        </div>
     </div>
     <div class="modal modal-lg-fullscreen fade" id="createGroup1" tabindex="-1" role="dialog"
         aria-labelledby="createGroupLabel" style="display: none;" aria-hidden="true">
@@ -571,7 +591,7 @@
                 <ul class="nav flex-nowrap position-absolute top-0 end-0 m-3">
                     <li class="nav-item list-inline-item mt-2">
                         <p data-bs-toggle="collapse" data-bs-target="#searchCollapse" aria-expanded="false"
-                            aria-controls="collapseExample">
+                            aria-controls="collapseExample" role="button">
                             <i class="fa fa-magnifying-glass"></i>
                         </p>
                     </li>
