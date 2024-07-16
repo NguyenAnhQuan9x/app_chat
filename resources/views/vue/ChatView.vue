@@ -6,8 +6,10 @@
     import { ref, onMounted, reactive } from "vue"
     import { httpService } from "./services/app-service";
     import { useRouter } from "vue-router";
+    import $ from "jquery"
     const router = useRouter()
     const conversation = reactive({})
+    const message_search_result = reactive({})
     const activePage = ref(0)
     const conversations = reactive({})
     const chat_id = ref(0)
@@ -29,7 +31,9 @@
         'user_id': ''
     })
     const name = ref(null)
+    const search_result_check = ref(1)
     const conversation_name = ref(null)
+    const keyword_message = ref(null)
     const addUserGroup = ref([])
     const groupForm = reactive({
         'title': '',
@@ -60,8 +64,10 @@
             httpService.getConversationDetail(chat_id.value)
                 .then(res => {
                     conversation.value = res.data.data
+                    newMessageChannel()
                     //console.log(conversation.value)
                     activePage.value = chat_id.value
+                    scrollToBottom()
                 }).catch(err => {
 
                 })
@@ -89,15 +95,16 @@
             .then(res => {
                 conversation.value = res.data.data
                 //console.log(conversation.value)
-                newMessage()
+                newMessageChannel()
                 activePage.value = conversation_id
+                scrollToBottom()
             }).catch(err => {
 
             })
         getMessage()
         readMessage()
     }
-    function newMessage(){
+    function newMessageChannel(){
         window.Echo.private('conversation-'+chat_id.value)
                     .listen('NewChatMessage',(e)=>{
                     console.log('listen event')
@@ -105,6 +112,11 @@
                     console.log(e);
                     console.log(newMessages.value);
                     })
+    }
+    //show/hide search result in conversation
+    function showSearchResult(){
+        $('#conversation').toggleClass('show-search-result')
+        //console.log('search')
     }
     //Lấy tin nhắn
     function getMessage()
@@ -134,6 +146,8 @@
         if (messageReply.value) {
             httpService.sendMessageReplay(messageForm, chat_id.value, messageReply.value.id)
                 .then(res => {
+                    scrollToBottom()
+                    closeReply()
                     //console.log('messsage sent')
                     //window.location.reload()
                 }).catch(err => {
@@ -144,7 +158,7 @@
             httpService.sendMessage(messageForm, chat_id.value)
                 .then(res => {
                     message.value = res.data.data
-                    //console.log('messsage sent')
+                    scrollToBottom()
                     //window.location.reload()
                 }).catch(err => {
 
@@ -152,12 +166,26 @@
         }
 
     }
+    function scrollToBottom()
+    {
+        $('.chat-body').animate({scrollTop:($('.message-day').height()+150)},100)
+       
+    }
+    function scrollToEle(message_id)
+    {
+
+        $('.chat-body').animate({
+            scrollTop:($('#message-pos-'+message_id).offset().top-($(window).height()/2)+$('.chat-body').scrollTop()+10)
+        },100)
+        search_result_check.value = message_id
+        //$('#message-pos-'+message_id).css({"border":"2px solid var(--extra-color)","box-shadow":"0px 1px 8px 0px gray"})
+    }
+
     //trả lời tin nhắn
     function replyMessage(message_id) {
         httpService.getMessageDetail(message_id)
             .then(res => {
                 messageReply.value = res.data.data
-                newMessage()
                 //console.log(messageReply.value)
             }).catch(err => {
 
@@ -274,6 +302,16 @@
 
         })
     }
+    //Tìm kiếm tin nhắn
+    function searchMessage()
+    {
+        httpService.searchMessage(conversation.value.id,keyword_message.value)
+        .then(res=>{
+            message_search_result.value = res.data.data
+        }).catch(err=>{
+
+        })
+    }
     //Tìm kiếm user theo tên
     function userSearch() {
         httpService.searchUser(name.value)
@@ -346,7 +384,6 @@
 </script>
 <template>
     <SideBarLeft></SideBarLeft>
-
     <div class="col-3" id="conversation">
         <div class="sticky-top bg-light p-2">
             <div class="position-relative">
@@ -416,7 +453,7 @@
                             <p :class="{'opacity-50':conversation.messages_count <= 0}"
                                 v-if="conversation.messages.length > 0 && user.value"><span
                                     v-if="conversation.messages[0].user_id==user.value.id">Bạn:
-                                </span>{{conversation.messages[0].content.slice(0,35)+'...'}}<span
+                                </span>{{conversation.messages[0].content.slice(0,20)+'...'}}<span
                                     v-if="conversation.messages_count > 0"
                                     class="message-count mx-2">{{conversation.messages_count}}</span></p>
                         </div>
@@ -433,13 +470,30 @@
                 </li>
             </ul>
         </div>
-        <div class="search-result">
-            <h3>Kết quả tìm kiếm</h3>
+        <div class="search-result mx-2">
+            <h4>Kết quả tìm kiếm</h4>
             <div class="search">
                 <p>Tin nhắn</p>
             </div>
             <div class="search-result-list">
-
+                <ul class="list-group contact-list">
+                <li class="contacts-item friends list-group-item mt-3"
+                    v-for="message_search in message_search_result.value" 
+                    >
+                    <div class="row">
+                        <div class="col-md-3 pt-2" id="conversation-avatar">
+                            <img src="https://www.w3schools.com/w3images/avatar2.png" class="img-fluid rounded-circle"
+                                alt="...">
+                        </div>
+                        <i class="fa-solid fa-circle" id="status-online"></i>
+                        <div href="" class="card-body col-md-9" @click="scrollToEle(message_search.id)">
+                            <h6 class="fw-semibold" ><span>{{ message_search.users.name }}</span></h6>
+                            <p v-html="message_search.content"></p>
+                        </div>
+                        
+                    </div>
+                </li>
+            </ul>
             </div>
         </div>
     </div>
@@ -589,7 +643,7 @@
                     </div>
                 </div>
                 <ul class="nav flex-nowrap position-absolute top-0 end-0 m-3">
-                    <li class="nav-item list-inline-item mt-2">
+                    <li class="nav-item list-inline-item mt-2" @click="showSearchResult()">
                         <p data-bs-toggle="collapse" data-bs-target="#searchCollapse" aria-expanded="false"
                             aria-controls="collapseExample" role="button">
                             <i class="fa fa-magnifying-glass"></i>
@@ -629,18 +683,23 @@
                 
                 <div id="searchCollapse" class="collapse border border-1">
                     <div class="container-xl py-2 px-0 px-md-3">
-                        <div class="search iq-search-bar device-search mx-3 mt-2">
-                            <form action="" class="searchbox ml-4">
+                        <div class="search iq-search-bar device-search mx-3 mt-2 row">
+                            <form action="" class="searchbox ml-4 col-10">
                                 <div class="form-group has-search">
                                     <a href="#" class="form-control-feedback"></a>
-                                    <input type="text" name="keyword" class="form-control w-80 align-content-center"
-                                        placeholder="Search">
+                                    <input type="text" name="keyword_message" v-model="keyword_message" class="form-control w-80 align-content-center"
+                                        placeholder="Search" @input="event=>searchMessage()">
                                 </div>
                             </form>
+                            <div class="col-1" @click="showSearchResult()">
+                                <button class="btn btn-secondary" data-bs-toggle="collapse" data-bs-target="#searchCollapse" aria-expanded="false"
+                            aria-controls="collapseExample" >Đóng</button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+           
             <div class="modal modal-lg-fullscreen fade" id="addUserGroup" tabindex="-1" role="dialog"
                             aria-labelledby="createGroupLabel" style="display: none;" aria-hidden="true">
                             <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-dialog-zoom">
@@ -783,12 +842,17 @@
                                             }}</span>
                                     </div>
                                 </div>
-                                <div class="message-wrapper">
+                                <div class="message-wrapper" :class="{'message-user':message.user_id!=user.value.id&&messages.value[index].user_id==messages.value[index-1].user_id}">
+                                    <div class="message-user-img" v-if="message.user_id!=user.value.id&&messages.value[index].user_id==messages.value[index-1].user_id">
+                                        <img alt="" class="rounded-circle"
+                                            src="https://i.pinimg.com/originals/51/a3/7c/51a37c78042b19cee727c4e210d03108.jpg"
+                                            width="26px" height="26px">
+                                    </div>
                                     <div class="message-content recover-message"
                                         v-if="message.is_published==0||messageRecover.includes(message.id)">
                                         Tin nhắn được được thu hồi
                                     </div>
-                                    <div class="message-content" v-else>
+                                    <div class="message-content" :class="{'message-search-marker':message.id==search_result_check}" :id="['message-pos-'+message.id]">
                                         <div class="msg-rl-content" v-if="message.reply_message">
                                             <div class="msg-rl-user">
                                                 {{message.reply_message.users.name}}
@@ -847,6 +911,7 @@
                                 </div>
                             </div>
                         </div>
+                        
                         <div v-if="newMessages.length">
                             <div :class="{'message-self':user.value.id==newMessage.user_id,'message':user.value.id!=newMessage.user_id,'message-deleted':newMessage.status==0&&newMessage.user_id==user.value.id}"
                             v-for="newMessage in newMessages">

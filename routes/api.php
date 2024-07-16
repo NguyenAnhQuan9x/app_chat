@@ -50,7 +50,8 @@ Route::group(['middleware'=>'auth:sanctum'],function(){
         Route::post('/message/store/{conversation}/{message}',[\App\Http\Controllers\Api\ConversationController::class,'replyMessage']);
         //delete overall messages in conversation
         Route::delete('/messages/delete/{conversation}',[\App\Http\Controllers\Api\ConversationController::class,'deleteMessageConversation']);
-
+        //search message in conversation
+        Route::get('/{conversation}/message_search',[\App\Http\Controllers\Api\ConversationController::class,'searchMessage']);
 
     });
 });

@@ -11,7 +11,11 @@
     top: 5px;
     font-size: 12px;
   }
-
+  .message-search-marker{
+    border: 2px solid var(--extra-color);
+    box-shadow: 0px 1px 8px 0px gray;
+    animation: scaleMessageSearch 0.5s ease-out running 0.3s both;
+  }
   #messageBody {
     .container {
       padding-bottom: 70px;
@@ -355,4 +359,12 @@
 #conversation-user-avatar img {
   width: 40px;
   height: 40px;
+}
+@keyframes scaleMessageSearch {
+  0%{
+    scale: 1.05;
+  }
+  100%{
+    scale: 1;
+  }
 }

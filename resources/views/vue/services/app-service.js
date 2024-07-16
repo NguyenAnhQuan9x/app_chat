@@ -135,6 +135,14 @@ class AppService {
             }
         })
     }
+    //Tìm kiếm tin nhắn trong cuộc hội thoại
+    searchMessage(conversation_id,data){
+        return appService.get('api/conversations/'+conversation_id+'/message_search?keyword='+data,{
+            headers:{
+                Authorization:'Bearer '+ JSON.parse(localStorage.getItem('token')).value
+            }
+        })
+    }
     getContact(){
         return appService.get('api/contacts',{
             headers:{

@@ -14,6 +14,7 @@ use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use PhpParser\Node\Expr\FuncCall;
+use Illuminate\Support\Str;
 
 class ConversationController extends Controller
 {
@@ -206,6 +207,48 @@ class ConversationController extends Controller
             return response()->json([
                 'status'=>false,
                 'message'=>'Recover message failed'
+            ],500);
+        }
+    }
+    //search message
+    public function searchMessage(Conversation $conversation,Request $request)
+    {
+        try {
+        $messages = '';
+        $keyword = '';
+        if($request->get('keyword')){
+            $keyword = $request->get('keyword');
+            $messages = $conversation->messages()->with('replyMessage','users')->with('users')
+            ->where('content','like',"%{$keyword}%");
+            $messages = $messages->get();
+        }else{
+            $messages = '';
+        }
+        $messages_search = [];
+        if(!empty($messages))
+        {
+            foreach($messages as $message)
+            {
+                $message->content = Str::replaceFirst([$keyword,Str::upper($keyword)],'<span class="search-marker">'.$keyword.'</span>',$message->content);
+                if(Str::length($message->content)>100){
+                    $check_position = Str::substr($message->content,0,50);
+                    if(!Str::contains($check_position,'<span class="search-marker">'.$keyword.'</span>')){
+                        $message->content = $check_position.'... '.'<span class="search-marker">'.$keyword.'</span>'.' ... ';
+                    }else{
+                        $message->content = Str::substr($message->content,0,75);
+                    }
+                }
+                array_push($messages_search,$message);
+            }
+        }
+        return response()->json([
+            'status'=>true,
+            'data'=>$messages,
+        ],200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status'=>false,
+                'message'=>'get message failed',
             ],500);
         }
     }
